@@ -2,16 +2,19 @@
 #define PS2_CONTROLLER_H
 
 #include <Arduino.h>
-#include <SPI.h>
+#include <avr/io.h>
+#include <util/delay.h>
 
-// กำหนดขา CS (Chip Select) หรือ ATT ของ PS2
-// ใน Arduino IDE เราอ้างอิงเป็นหมายเลขขาบนบอร์ดได้เลย
-#define PS2_CS_PIN 10 
+// Pin Mapping (PORTB)
 
-// ขา SPI อื่นๆ Arduino จะจัดการให้อัตโนมัติ:
-// MOSI = 11, MISO = 12, SCK = 13
+#define PS2_ATT_PIN PB2 // D10
+#define PS2_CMD_PIN PB3 // D11
+#define PS2_DAT_PIN PB4 // D12
+#define PS2_CLK_PIN PB5 // D13
 
-void PS2_Init();
+// Function Prototypes
+void SPI_Init(void);
+uint8_t SPI_Transfer(uint8_t data);
 void PS2_ReadData(uint8_t *ps2_data);
 
 #endif

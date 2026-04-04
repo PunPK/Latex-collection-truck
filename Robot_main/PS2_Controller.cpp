@@ -1,39 +1,59 @@
-#include "PS2_Controller.h"
+#include "ps2_controller.h"
 
-void PS2_Init() {
-  // ตั้งค่าขา CS เป็น Output และดึงให้เป็น HIGH ไว้ก่อน (ยังไม่คุย)
-  pinMode(PS2_CS_PIN, OUTPUT);
-  digitalWrite(PS2_CS_PIN, HIGH);
-  
-  // เปิดใช้งาน Hardware SPI ของ Arduino
-  SPI.begin();
+// SPI INIT
+void SPI_Init(void)
+{
+
+    // MOSI, SCK, SS เป็น Output
+    DDRB |= (1 << PS2_CMD_PIN) | (1 << PS2_CLK_PIN) | (1 << PS2_ATT_PIN);
+
+    // MISO เป็น Input
+    DDRB &= ~(1 << PS2_DAT_PIN);
+
+    // Pull-up MISO
+    PORTB |= (1 << PS2_DAT_PIN);
+
+    // ATT = HIGH
+    PORTB |= (1 << PS2_ATT_PIN);
+
+    // SPI Config
+    SPCR = (1 << SPE) | (1 << DORD) | (1 << MSTR) |
+           (1 << CPOL) | (1 << CPHA) |
+           (1 << SPR1) | (1 << SPR0);
 }
 
-void PS2_ReadData(uint8_t *ps2_data) {
-  // ตั้งค่าโปรโตคอลของ PS2: ความเร็ว 250kHz, ส่ง LSB ก่อน, โหมด 3
-  SPI.beginTransaction(SPISettings(250000, LSBFIRST, SPI_MODE3));
+// SPI TRANSFER
+uint8_t SPI_Transfer(uint8_t data)
+{
 
-  // 1. ดึงขา CS เป็น LOW เพื่อเริ่มคุย
-  digitalWrite(PS2_CS_PIN, LOW);
-  delayMicroseconds(10);
+    SPDR = data;
 
-  // 2. ส่งคำสั่งพื้นฐาน
-  SPI.transfer(0x01); // Start Byte
-  SPI.transfer(0x42); // Request Data
-  SPI.transfer(0x00); // Dummy
+    while (!(SPSR & (1 << SPIF)))
+        ;
 
-  // 3. อ่านค่าข้อมูล 6 ไบต์เก็บลง Array
-  ps2_data[0] = SPI.transfer(0x00); // ปุ่มกลุ่มแรก (ทิศทาง)
-  ps2_data[1] = SPI.transfer(0x00); // ปุ่มกลุ่มสอง (แอคชัน)
-  ps2_data[2] = SPI.transfer(0x00); // อนาล็อกขวา X
-  ps2_data[3] = SPI.transfer(0x00); // อนาล็อกขวา Y
-  ps2_data[4] = SPI.transfer(0x00); // อนาล็อกซ้าย X
-  ps2_data[5] = SPI.transfer(0x00); // อนาล็อกซ้าย Y
+    return SPDR;
+}
 
-  // 4. ดึงขา CS กลับเป็น HIGH เพื่อจบการสนทนา
-  delayMicroseconds(10);
-  digitalWrite(PS2_CS_PIN, HIGH);
+// READ PS2 DATA
+void PS2_ReadData(uint8_t *ps2_data)
+{
 
-  // ปิดการตั้งค่า SPI ชุดนี้
-  SPI.endTransaction();
+    PORTB &= ~(1 << PS2_ATT_PIN);
+    _delay_us(10);
+
+    SPI_Transfer(0x01);
+    SPI_Transfer(0x42);
+    SPI_Transfer(0x00);
+
+    ps2_data[0] = SPI_Transfer(0x00);
+    ps2_data[1] = SPI_Transfer(0x00);
+    ps2_data[2] = SPI_Transfer(0x00);
+    ps2_data[3] = SPI_Transfer(0x00);
+    ps2_data[4] = SPI_Transfer(0x00);
+    ps2_data[5] = SPI_Transfer(0x00);
+
+    _delay_us(10);
+    PORTB |= (1 << PS2_ATT_PIN);
+
+    return 1;
 }
