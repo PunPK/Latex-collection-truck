@@ -1,5 +1,5 @@
 #include "ps2_controller.h"
-
+#include "motor.h"
 
 // Array เก็บข้อมูลจากจอย
 uint8_t ps2_data[6];
@@ -9,6 +9,7 @@ void setup()
 {
     Serial.begin(9600);
     SPI_Init();
+    motor_init();
 }
 
 void loop()
@@ -41,6 +42,18 @@ void loop()
         }
 
     Serial.println();
+
+    // Forward(1000);
+    // Stop(500);
+
+    // Backward(1000);
+    // Stop(500);
+
+    // turnLeft(1000);
+    // Stop(500);
+
+    // turnRight(1000);
+    // Stop(500);
 
     delay(100);
 }
