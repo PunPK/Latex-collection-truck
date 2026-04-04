@@ -17,4 +17,21 @@ void SPI_Init(void);
 uint8_t SPI_Transfer(uint8_t data);
 void PS2_ReadData(uint8_t *ps2_data);
 
+typedef enum {
+    STOP = 0,
+
+    FORWARD,
+    BACKWARD,
+    LEFT,
+    RIGHT,
+
+    FORWARD_LEFT,
+    FORWARD_RIGHT,
+    BACKWARD_LEFT,
+    BACKWARD_RIGHT
+
+} PS2_Status;
+
+PS2_Status PS2_GetStatus(uint8_t *ps2_data);
+
 #endif
