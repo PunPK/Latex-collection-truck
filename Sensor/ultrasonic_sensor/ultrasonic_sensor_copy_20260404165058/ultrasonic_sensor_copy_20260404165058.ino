@@ -2,7 +2,7 @@
 
 Servo myServo;
 
-int trigPin = 9;
+int trigPin = 7;
 int echoPin = 8;
 
 long duration;
@@ -10,7 +10,7 @@ int distance;
 
 void setup() {
   Serial.begin(9600);
-  myServo.attach(6);
+  myServo.attach(9);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
 }
