@@ -5,22 +5,15 @@
 uint8_t ps2_data[6];
 PS2_Status status = STOP;
 
-void setup()
+const unsigned long PS2_POLL_INTERVAL_MS = 15;
+const unsigned long DEBUG_PRINT_INTERVAL_MS = 120;
+
+unsigned long last_ps2_poll_ms = 0;
+unsigned long last_debug_print_ms = 0;
+
+void apply_motor_from_status(PS2_Status current)
 {
-    Serial.begin(9600);
-
-    motor_init();
-    PS2_Init();
-    ultrasonic_init();
-    PS2_EnableAnalog(); 
-}
-
-void loop()
-{
-    PS2_ReadData(ps2_data);
-    status = PS2_GetStatus(ps2_data);
-
-    switch (status)
+    switch (current)
     {
     case FORWARD:
         motor_forward();
@@ -50,7 +43,10 @@ void loop()
         motor_stop();
         break;
     }
+}
 
+void print_debug()
+{
     Serial.print("PS2: ");
     for (uint8_t i = 0; i < 6; i++)
     {
@@ -91,6 +87,35 @@ void loop()
     }
 
     Serial.println();
+}
 
+void setup()
+{
+    Serial.begin(9600);
+
+    motor_init();
+    PS2_Init();
+    ultrasonic_init();
+    PS2_EnableAnalog();
+}
+
+void loop()
+{
     ultrasonic_update();
+
+    unsigned long now = millis();
+
+    if (now - last_ps2_poll_ms >= PS2_POLL_INTERVAL_MS)
+    {
+        last_ps2_poll_ms = now;
+        PS2_ReadData(ps2_data);
+        status = PS2_GetStatus(ps2_data);
+        apply_motor_from_status(status);
+    }
+
+    if (now - last_debug_print_ms >= DEBUG_PRINT_INTERVAL_MS)
+    {
+        last_debug_print_ms = now;
+        print_debug();
+    }
 }

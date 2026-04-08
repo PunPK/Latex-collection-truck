@@ -23,7 +23,7 @@ namespace
             outgoingByte >>= 1;
 
             digitalWrite(PS2_CLK_PIN, LOW);
-            delayMicroseconds(20);
+            delayMicroseconds(8);
 
             if (digitalRead(PS2_DAT_PIN) == HIGH)
             {
@@ -31,7 +31,7 @@ namespace
             }
 
             digitalWrite(PS2_CLK_PIN, HIGH);
-            delayMicroseconds(20);
+            delayMicroseconds(8);
         }
 
         return incomingByte;
@@ -53,7 +53,7 @@ void PS2_Init()
 void PS2_ReadData(uint8_t *ps2_data)
 {
     digitalWrite(PS2_ATT_PIN, LOW);
-    delayMicroseconds(20);
+    delayMicroseconds(10);
 
     ps2Transfer(0x01);
     ps2Transfer(0x42);
@@ -64,8 +64,8 @@ void PS2_ReadData(uint8_t *ps2_data)
         ps2_data[i] = ps2Transfer(0x00);
     }
 
-    delayMicroseconds(20);
-    // digitalWrite(PS2_ATT_PIN, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(PS2_ATT_PIN, HIGH);
 }
 
 PS2_Status PS2_GetStatus(uint8_t *ps2_data)
