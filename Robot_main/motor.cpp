@@ -1,75 +1,70 @@
 #include "motor.h"
+#include "robot_config.h"
 
-void motor_init() {
-    pinMode(MA1, OUTPUT);
-    pinMode(MA2, OUTPUT);
-    pinMode(MB1, OUTPUT);
-    pinMode(MB2, OUTPUT);
-    pinMode(PWM_A, OUTPUT);
-    pinMode(PWM_B, OUTPUT);
+namespace
+{
+  const uint8_t MOTOR_FORWARD_LEVEL = HIGH;
+  const uint8_t MOTOR_BACKWARD_LEVEL = LOW;
+
+  void setMotorOutputs(uint8_t leftDir, uint8_t leftSpeed, uint8_t rightDir, uint8_t rightSpeed)
+  {
+    digitalWrite(LEFT_MOTOR_DIR_PIN, leftDir);
+    digitalWrite(RIGHT_MOTOR_DIR_PIN, rightDir);
+    analogWrite(LEFT_MOTOR_PWM_PIN, leftSpeed);
+    analogWrite(RIGHT_MOTOR_PWM_PIN, rightSpeed);
+  }
 }
 
-void Forward(int time)
+void motor_init()
 {
-  digitalWrite(MA1, LOW);
-  digitalWrite(MA2, HIGH);
-  analogWrite(PWM_A, SPEED);
-
-  digitalWrite(MB1, HIGH);
-  digitalWrite(MB2, LOW);
-  analogWrite(PWM_B, SPEED);
-
-  delay(time);
+  pinMode(LEFT_MOTOR_PWM_PIN, OUTPUT);
+  pinMode(LEFT_MOTOR_DIR_PIN, OUTPUT);
+  pinMode(RIGHT_MOTOR_PWM_PIN, OUTPUT);
+  pinMode(RIGHT_MOTOR_DIR_PIN, OUTPUT);
+  motor_stop();
 }
 
-void Backward(int time)
+void motor_stop()
 {
-  digitalWrite(MA1, HIGH);
-  digitalWrite(MA2, LOW);
-  analogWrite(PWM_A, SPEED);
-
-  digitalWrite(MB1, LOW);
-  digitalWrite(MB2, HIGH);
-  analogWrite(PWM_B, SPEED);
-
-  delay(time);
+  setMotorOutputs(MOTOR_FORWARD_LEVEL, 0, MOTOR_FORWARD_LEVEL, 0);
 }
 
-void turnLeft(int time)
+void motor_forward()
 {
-  digitalWrite(MA1, HIGH);
-  digitalWrite(MA2, LOW);
-  analogWrite(PWM_A, SPEED);
-
-  digitalWrite(MB1, LOW);
-  digitalWrite(MB2, LOW);
-  analogWrite(PWM_B, 0);
-
-  delay(time);
+  setMotorOutputs(MOTOR_FORWARD_LEVEL, MOTOR_FULL_SPEED, MOTOR_FORWARD_LEVEL, MOTOR_FULL_SPEED);
 }
 
-void turnRight(int time)
+void motor_backward()
 {
-  digitalWrite(MA1, LOW);
-  digitalWrite(MA2, LOW);
-  analogWrite(PWM_A, 0);
-
-  digitalWrite(MB1, LOW);
-  digitalWrite(MB2, HIGH);
-  analogWrite(PWM_B, SPEED);
-
-  delay(time);
+  setMotorOutputs(MOTOR_BACKWARD_LEVEL, MOTOR_FULL_SPEED, MOTOR_BACKWARD_LEVEL, MOTOR_FULL_SPEED);
 }
 
-void Stop(int time)
+void motor_turn_left()
 {
-  digitalWrite(MA1, LOW);
-  digitalWrite(MA2, LOW);
-  analogWrite(PWM_A, 0);
+  setMotorOutputs(MOTOR_BACKWARD_LEVEL, 0, MOTOR_FORWARD_LEVEL, MOTOR_TURN_SPEED);
+}
 
-  digitalWrite(MB1, LOW);
-  digitalWrite(MB2, LOW);
-  analogWrite(PWM_B, 0);
+void motor_turn_right()
+{
+  setMotorOutputs(MOTOR_FORWARD_LEVEL, MOTOR_TURN_SPEED, MOTOR_BACKWARD_LEVEL, 0);
+}
 
-  delay(time);
+void motor_forward_left()
+{
+  setMotorOutputs(MOTOR_FORWARD_LEVEL, MOTOR_CURVE_SPEED, MOTOR_FORWARD_LEVEL, MOTOR_FULL_SPEED);
+}
+
+void motor_forward_right()
+{
+  setMotorOutputs(MOTOR_FORWARD_LEVEL, MOTOR_FULL_SPEED, MOTOR_FORWARD_LEVEL, MOTOR_CURVE_SPEED);
+}
+
+void motor_backward_left()
+{
+  setMotorOutputs(MOTOR_BACKWARD_LEVEL, MOTOR_CURVE_SPEED, MOTOR_BACKWARD_LEVEL, MOTOR_FULL_SPEED);
+}
+
+void motor_backward_right()
+{
+  setMotorOutputs(MOTOR_BACKWARD_LEVEL, MOTOR_FULL_SPEED, MOTOR_BACKWARD_LEVEL, MOTOR_CURVE_SPEED);
 }

@@ -3,23 +3,15 @@
 
 #include <Arduino.h>
 
-// PIN CONFIG ต้องแก้ใหม่
-#define MA1 2
-#define MA2 3
-#define MB1 4
-#define MB2 5
-
-#define PWM_A 6
-#define PWM_B 9
-
-#define SPEED 200
-
 void motor_init();
-
-void Forward(int time);
-void Backward(int time);
-void turnLeft(int time);
-void turnRight(int time);
-void Stop(int time);
+void motor_stop();
+void motor_forward();
+void motor_backward();
+void motor_turn_left();
+void motor_turn_right();
+void motor_forward_left();
+void motor_forward_right();
+void motor_backward_left();
+void motor_backward_right();
 
 #endif
