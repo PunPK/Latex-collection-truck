@@ -11,17 +11,15 @@ void setup()
   // สั่งให้ฐาน (Channel 0) หยุดนิ่งทันที
   Serial.println("เริ่มต้น: กำลังตั้งค่าแขนกล");
   pwm.setPWM(0, 0, BASE_STOP);
-  pwm.setPWM(1, 0, BASE_STOP);
+  pwm.setPWM(1, 0, 200);
+  pwm.setPWM(2, 0, 200);
   pwm.setPWM(3, 0, 400);
   pwm.setPWM(4, 0, BASE_STOP);
-  pwm.setPWM(5, 0, BASE_STOP);
-  pwm.setPWM(6, 0, 300);
+  pwm.setPWM(5, 0, 300);
 
   Serial.println("เริ่มต้น: กำลังจัดตำแหน่งแขนกล");
-  turnBase(1, 300, 800);
+  turnBase(5, 300, 1000);
   delay(500);
-  // turnBase(2, 300, 1000);
-  // delay(500);
 
   Serial.println("เริ่มต้น: จบการตั้งค่าแขนกล");
 
@@ -43,7 +41,6 @@ void loop()
   // // ค่า > 280 ยิ่งมากยิ่งหมุนเร็ว (เช่น 350)
   // turnBase(0, 300, 1000);
   // delay(2000); // หยุดพัก 2 วินาที
-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   // Serial.println("ฐาน: หมุนไปทิศทางที่ 2 (ความเร็วปานกลาง) เป็นเวลา 1 วินาที");
   // // ค่า < 270 ยิ่งน้อยยิ่งหมุนเร็ว (เช่น 200)
   // turnBase(0, 230, 1000);
