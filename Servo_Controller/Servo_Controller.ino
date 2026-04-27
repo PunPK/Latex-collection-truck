@@ -1,48 +1,61 @@
 #include "PCA9685_Control.h"
-
+const int BASE_STOP = 275; // ค่าที่ทำให้มอเตอร์ฐานหยุดนิ่งสนิท
 PCA9685Control pwm = PCA9685Control(0x40);
 
-void setup() {
+void setup()
+{
   Serial.begin(9600);
-  pwm.begin();         
-  pwm.setPWMFreq(50);  
+  pwm.begin();
+  pwm.setPWMFreq(50);
 
-  // กำหนดท่าเริ่มต้นของแขนกล (สมมติให้ช่อง 0 และ 1 ไปที่จุดกึ่งกลาง)
-  pwm.setPWM(0, 0, 300);
-  pwm.setPWM(1, 0, 300);
-  delay(1000); // รอให้เข้าที่
+  // สั่งให้ฐาน (Channel 0) หยุดนิ่งทันที
+  Serial.println("เริ่มต้น: กำลังตั้งค่าแขนกล");
+  pwm.setPWM(0, 0, BASE_STOP);
+  pwm.setPWM(1, 0, BASE_STOP);
+  pwm.setPWM(3, 0, 400);
+  pwm.setPWM(4, 0, BASE_STOP);
+  pwm.setPWM(5, 0, BASE_STOP);
+  pwm.setPWM(6, 0, 300);
+
+  Serial.println("เริ่มต้น: กำลังจัดตำแหน่งแขนกล");
+  turnBase(1, 300, 800);
+  delay(500);
+  // turnBase(2, 300, 1000);
+  // delay(500);
+
+  Serial.println("เริ่มต้น: จบการตั้งค่าแขนกล");
+
+  delay(1000);
 }
 
-// สร้างฟังก์ชันขยับ Servo แบบนุ่มนวล โดยอ้างอิงจากตำแหน่งปัจจุบัน
-void moveSmooth(uint8_t channel, uint16_t targetPulse, int speedDelay) {
-  // 1. ถามคลาสว่า ตอนนี้ Servo ตัวนี้อยู่ที่ตำแหน่งไหน?
-  uint16_t current = pwm.getPos(channel); 
-  
-  // 2. เปรียบเทียบและค่อยๆ สั่งให้ขยับไปหาเป้าหมาย
-  if (current < targetPulse) {
-    for (uint16_t p = current; p <= targetPulse; p++) {
-      pwm.setPWM(channel, 0, p);
-      delay(speedDelay);
-    }
-  } 
-  else if (current > targetPulse) {
-    for (uint16_t p = current; p >= targetPulse; p--) {
-      pwm.setPWM(channel, 0, p);
-      delay(speedDelay);
-    }
-  }
+//  servo 360
+// รับค่าความเร็ว/ทิศทาง (speedPulse) และเวลาที่ให้หมุน (durationMs)
+void turnBase(uint8_t channel, uint16_t speedPulse, int durationMs)
+{
+  pwm.setPWM(channel, 0, speedPulse);
+  delay(durationMs);
+  pwm.setPWM(channel, 0, BASE_STOP);
 }
 
-void loop() {
-  Serial.println("ขยับข้อต่อที่ 0 ไปตำแหน่ง 400 ช้าๆ...");
-  moveSmooth(0, 400, 500); // ช่อง 0, เป้าหมาย 400, delay 5ms ต่อเสต็ป
-  delay(1000);
+void loop()
+{
+  // Serial.println("ฐาน: หมุนไปทิศทางที่ 1 (ความเร็วปานกลาง) เป็นเวลา 1 วินาที");
+  // // ค่า > 280 ยิ่งมากยิ่งหมุนเร็ว (เช่น 350)
+  // turnBase(0, 300, 1000);
+  // delay(2000); // หยุดพัก 2 วินาที
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  // Serial.println("ฐาน: หมุนไปทิศทางที่ 2 (ความเร็วปานกลาง) เป็นเวลา 1 วินาที");
+  // // ค่า < 270 ยิ่งน้อยยิ่งหมุนเร็ว (เช่น 200)
+  // turnBase(0, 230, 1000);
+  // delay(2000);
 
-  Serial.println("ขยับข้อต่อที่ 1 ไปตำแหน่ง 200 เร็วขึ้น...");
-  moveSmooth(1, 200, 200); // ช่อง 1, เป้าหมาย 200, delay 2ms ต่อเสต็ป
-  delay(1000);
-  
-  Serial.println("ขยับข้อต่อ 0 กลับมาที่ 300...");
-  moveSmooth(0, 300, 500);
-  delay(1000);
+  // Serial.println("บน1: หมุนไปทิศทางที่ 1 (ความเร็วปานกลาง) เป็นเวลา 1 วินาที");
+  // // ค่า > 280 ยิ่งมากยิ่งหมุนเร็ว (เช่น 350)
+  // turnBase(1, 300, 500);
+  // delay(2000); // หยุดพัก 2 วินาที
+
+  // Serial.println("บน1: หมุนไปทิศทางที่ 2 (ความเร็วปานกลาง) เป็นเวลา 1 วินาที");
+  // // ค่า < 270 ยิ่งน้อยยิ่งหมุนเร็ว (เช่น 200)
+  // turnBase(1, 250, 500);
+  // delay(2000);
 }
