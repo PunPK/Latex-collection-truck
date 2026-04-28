@@ -5,7 +5,8 @@
 #include "servo_controller.h"
 
 uint8_t ps2_data[6];
-PS2_Status status = STOP;
+PS2_Status status_left = STOP;
+PS2_Status status_right = STOP;
 
 // PS2X library instance
 PS2X ps2x;
@@ -18,6 +19,21 @@ const unsigned long DEBUG_PRINT_INTERVAL_MS = 120;
 
 unsigned long last_ps2_poll_ms = 0;
 unsigned long last_debug_print_ms = 0;
+
+PS2_Status get_status_from_sticks(int x, int y, PS2_Status center_value)
+{
+    // map to PS2_Status
+    if (x == 0 && y == 1) return BACKWARD;
+    else if (x == 0 && y == -1) return FORWARD;
+    else if (x == -1 && y == 0) return LEFT;
+    else if (x == 1 && y == 0) return RIGHT;
+    else if (x == -1 && y == 1) return BACKWARD_LEFT;
+    else if (x == 1 && y == 1) return BACKWARD_RIGHT;
+    else if (x == -1 && y == -1) return FORWARD_LEFT;
+    else if (x == 1 && y == -1) return FORWARD_RIGHT;
+    else return center_value;
+}
+
 
 void apply_motor_from_status(PS2_Status current)
 {
@@ -76,8 +92,9 @@ void print_debug()
     Serial.print(" CIR:" ); Serial.print(ps2x.Button(PSB_CIRCLE) ? 1 : 0);
     Serial.print(" X:" ); Serial.print(ps2x.Button(PSB_CROSS) ? 1 : 0);
 
-    Serial.print("  | STATUS: ");
-    switch (status)
+   Serial.print("  | STATUS: ");
+    Serial.print(" LEFT :");
+    switch (status_left)
     {
     case FORWARD: Serial.print("FORWARD"); break;
     case BACKWARD: Serial.print("BACKWARD"); break;
@@ -90,6 +107,21 @@ void print_debug()
     default: Serial.print("STOP"); break;
     }
 
+    Serial.print("  | STATUS: ");
+    Serial.print("  |  RIGHT :");
+    switch (status_right)
+    {
+    case FORWARD: Serial.print("FORWARD"); break;
+    case BACKWARD: Serial.print("BACKWARD"); break;
+    case LEFT: Serial.print("LEFT"); break;
+    case RIGHT: Serial.print("RIGHT"); break;
+    case FORWARD_LEFT: Serial.print("FORWARD_LEFT"); break;
+    case FORWARD_RIGHT: Serial.print("FORWARD_RIGHT"); break;
+    case BACKWARD_LEFT: Serial.print("BACKWARD_LEFT"); break;
+    case BACKWARD_RIGHT: Serial.print("BACKWARD_RIGHT"); break;
+    default: Serial.print("CENTER"); break;
+    }
+
     Serial.println();
 }
 
@@ -98,11 +130,8 @@ void setup()
     Serial.begin(9600);
 
     motor_init();
-    // configure PS2X with pins from robot_config.h
-    // order: clock, command, attention, data
     ps2x.config_gamepad(PS2_CLK_PIN, PS2_CMD_PIN, PS2_ATT_PIN, PS2_DAT_PIN, true, true);
     ultrasonic_init();
-    // PS2X handles enabling analog/pressures in config above
     servo_init();
 }
 
@@ -147,20 +176,44 @@ void loop()
         {
             y = -1;
         }
+        status_left = get_status_from_sticks(x, y, STOP);
 
-        // map to PS2_Status
-        if (x == 0 && y == 1) status = BACKWARD;
-        else if (x == 0 && y == -1) status = FORWARD;
-        else if (x == -1 && y == 0) status = LEFT;
-        else if (x == 1 && y == 0) status = RIGHT;
-        else if (x == -1 && y == 1) status =  BACKWARD_LEFT;
-        else if (x == 1 && y == 1) status = BACKWARD_RIGHT;
-        else if (x == -1 && y == -1) status = FORWARD_LEFT;
-        else if (x == 1 && y == -1) status = FORWARD_RIGHT;
-        else status = STOP;
-
-        apply_motor_from_status(status);
+        apply_motor_from_status(status_left);
     }
+
+
+            int x_right = 0;
+            int y_right = 0;
+
+            uint8_t analog_x = ps2x.Analog(PSS_RX);
+            uint8_t analog_y = ps2x.Analog(PSS_RY);
+            if (((uint8_t)abs((int)analog_x - 128) <= PS2_DEADZONE) && !ps2x.Button(PSB_SQUARE) && !ps2x.Button(PSB_CIRCLE))
+            {
+                x_right = 0;
+            }
+            else if ((analog_x < 128) || ps2x.Button(PSB_SQUARE))        
+            {
+                x_right = -1;
+            }
+            else
+            {
+                x_right = 1;
+            }
+
+            if (((uint8_t)abs((int)analog_y - 128) <= PS2_DEADZONE) && !ps2x.Button(PSB_TRIANGLE) && !ps2x.Button(PSB_CROSS))
+            {
+                y_right = 0;
+            }
+            else if ((analog_y > 128) || ps2x.Button(PSB_CROSS))
+            {
+                y_right = 1;
+            }
+            else
+            {
+                y_right = -1;
+            }
+
+            status_right = get_status_from_sticks(x_right, y_right, STOP);
 
     if (now - last_debug_print_ms >= DEBUG_PRINT_INTERVAL_MS)
     {
