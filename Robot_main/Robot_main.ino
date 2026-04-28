@@ -176,44 +176,52 @@ void loop()
         {
             y = -1;
         }
+
+        int x_right = 0;
+        int y_right = 0;
+
+        uint8_t analog_x_right = ps2x.Analog(PSS_RX);
+        uint8_t analog_y_right = ps2x.Analog(PSS_RY);
+        if (((uint8_t)abs((int)analog_x_right - 128) <= PS2_DEADZONE) && !ps2x.Button(PSB_SQUARE) && !ps2x.Button(PSB_CIRCLE))
+        {
+            x_right = 0;
+        }
+        else if ((analog_x_right < 128) || ps2x.Button(PSB_SQUARE))        
+        {
+            x_right = -1;
+        }
+        else
+        {
+            x_right = 1;
+        }
+
+        if (((uint8_t)abs((int)analog_y_right - 128) <= PS2_DEADZONE) && !ps2x.Button(PSB_TRIANGLE) && !ps2x.Button(PSB_CROSS))
+        {
+            y_right = 0;
+        }
+        else if ((analog_y_right > 128) || ps2x.Button(PSB_CROSS))
+        {
+            y_right = 1;
+        }
+        else
+        {
+            y_right = -1;
+        }
+        
+        if (ps2x.Analog(PSS_RX) == 255 && ps2x.Analog(PSS_RY) == 255 && ps2x.Analog(PSS_LX) == 255 && ps2x.Analog(PSS_LY) == 255)
+        {
+            x = 0;
+            y = 0;
+            x_right = 0;
+            y_right = 0;
+        }
+
         status_left = get_status_from_sticks(x, y, STOP);
-
         apply_motor_from_status(status_left);
+
+        status_right = get_status_from_sticks(x_right, y_right, STOP);
+        
     }
-
-
-            int x_right = 0;
-            int y_right = 0;
-
-            uint8_t analog_x = ps2x.Analog(PSS_RX);
-            uint8_t analog_y = ps2x.Analog(PSS_RY);
-            if (((uint8_t)abs((int)analog_x - 128) <= PS2_DEADZONE) && !ps2x.Button(PSB_SQUARE) && !ps2x.Button(PSB_CIRCLE))
-            {
-                x_right = 0;
-            }
-            else if ((analog_x < 128) || ps2x.Button(PSB_SQUARE))        
-            {
-                x_right = -1;
-            }
-            else
-            {
-                x_right = 1;
-            }
-
-            if (((uint8_t)abs((int)analog_y - 128) <= PS2_DEADZONE) && !ps2x.Button(PSB_TRIANGLE) && !ps2x.Button(PSB_CROSS))
-            {
-                y_right = 0;
-            }
-            else if ((analog_y > 128) || ps2x.Button(PSB_CROSS))
-            {
-                y_right = 1;
-            }
-            else
-            {
-                y_right = -1;
-            }
-
-            status_right = get_status_from_sticks(x_right, y_right, STOP);
 
     if (now - last_debug_print_ms >= DEBUG_PRINT_INTERVAL_MS)
     {
