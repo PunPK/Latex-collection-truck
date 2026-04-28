@@ -1,6 +1,7 @@
 #include "motor.h"
 #include "PS2_Controller.h"
 #include "ultrasonic_sensor.h"
+#include "servo_controller.h"
 
 uint8_t ps2_data[6];
 PS2_Status status = STOP;
@@ -97,6 +98,7 @@ void setup()
     PS2_Init();
     ultrasonic_init();
     PS2_EnableAnalog();
+    servo_init();
 }
 
 void loop()
