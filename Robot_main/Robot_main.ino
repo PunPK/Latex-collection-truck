@@ -15,7 +15,7 @@ PS2X ps2x;
 const uint8_t PS2_DEADZONE = 12;
 
 const unsigned long PS2_POLL_INTERVAL_MS = 15;
-const unsigned long DEBUG_PRINT_INTERVAL_MS = 120;
+const unsigned long DEBUG_PRINT_INTERVAL_MS = 250;
 
 unsigned long last_ps2_poll_ms = 0;
 unsigned long last_debug_print_ms = 0;
@@ -127,7 +127,7 @@ void print_debug()
 
 void setup()
 {
-    Serial.begin(9600);
+    Serial.begin(115200);
 
     motor_init();
     ps2x.config_gamepad(PS2_CLK_PIN, PS2_CMD_PIN, PS2_ATT_PIN, PS2_DAT_PIN, true, true);
