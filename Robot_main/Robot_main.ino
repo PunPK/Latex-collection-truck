@@ -178,7 +178,7 @@ void setup()
 
 void loop()
 {
-    // ultrasonic_update();
+    ultrasonic_update();
 
     unsigned long now = millis();
 

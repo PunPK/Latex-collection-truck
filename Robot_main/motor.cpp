@@ -21,7 +21,11 @@ void motor_init()
   pinMode(LEFT_MOTOR_DIR_PIN, OUTPUT);
   pinMode(RIGHT_MOTOR_PWM_PIN, OUTPUT);
   pinMode(RIGHT_MOTOR_DIR_PIN, OUTPUT);
-  motor_stop();
+
+  digitalWrite(LEFT_MOTOR_DIR_PIN, LOW);
+  digitalWrite(RIGHT_MOTOR_DIR_PIN, LOW);
+  analogWrite(LEFT_MOTOR_PWM_PIN, 0);
+  analogWrite(RIGHT_MOTOR_PWM_PIN, 0);
 }
 
 void motor_stop()
