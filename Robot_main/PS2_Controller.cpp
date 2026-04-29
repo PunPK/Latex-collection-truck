@@ -1,5 +1,5 @@
 #include "PS2_Controller.h"
-
+#include "PS2X_lib.h"
 namespace
 {
     uint8_t ps2Transfer(uint8_t outgoingByte)
@@ -110,4 +110,60 @@ void PS2_ReadData(uint8_t *ps2_data)
 
     delayMicroseconds(10);
     digitalWrite(PS2_ATT_PIN, HIGH);
+}
+
+void print_debug(PS2_Status status_left, PS2_Status status_right, PS2_Status gripper_status)
+{
+    // Print raw analog values and D-pad/button states from PS2X
+    Serial.print("ANALOG RX:");
+    Serial.print(ps2x.Analog(PSS_RX));
+    Serial.print("  LX:");
+    Serial.print(ps2x.Analog(PSS_LX));
+    Serial.print("  RY:");
+    Serial.print(ps2x.Analog(PSS_RY));
+    Serial.print("  LY:");
+    Serial.print(ps2x.Analog(PSS_LY));
+
+    Serial.print("  | D-PAD U:" ); Serial.print(ps2x.Button(PSB_PAD_UP) ? 1 : 0);
+    Serial.print(" D:" ); Serial.print(ps2x.Button(PSB_PAD_DOWN) ? 1 : 0);
+    Serial.print(" L:" ); Serial.print(ps2x.Button(PSB_PAD_LEFT) ? 1 : 0);
+    Serial.print(" R:" ); Serial.print(ps2x.Button(PSB_PAD_RIGHT) ? 1 : 0);
+
+    // Right-side face buttons: Triangle, Square, Circle, Cross
+    Serial.print("  | TRI:" ); Serial.print(ps2x.Button(PSB_TRIANGLE) ? 1 : 0);
+    Serial.print(" SQ:" ); Serial.print(ps2x.Button(PSB_SQUARE) ? 1 : 0);
+    Serial.print(" CIR:" ); Serial.print(ps2x.Button(PSB_CIRCLE) ? 1 : 0);
+    Serial.print(" X:" ); Serial.print(ps2x.Button(PSB_CROSS) ? 1 : 0);
+
+   Serial.print("  | STATUS: ");
+    Serial.print(" LEFT :");
+    switch (status_left)
+    {
+    case FORWARD: Serial.print("FORWARD"); break;
+    case BACKWARD: Serial.print("BACKWARD"); break;
+    case LEFT: Serial.print("LEFT"); break;
+    case RIGHT: Serial.print("RIGHT"); break;
+    case FORWARD_LEFT: Serial.print("FORWARD_LEFT"); break;
+    case FORWARD_RIGHT: Serial.print("FORWARD_RIGHT"); break;
+    case BACKWARD_LEFT: Serial.print("BACKWARD_LEFT"); break;
+    case BACKWARD_RIGHT: Serial.print("BACKWARD_RIGHT"); break;
+    default: Serial.print("STOP"); break;
+    }
+
+    Serial.print("  | STATUS: ");
+    Serial.print("  |  RIGHT :");
+    switch (status_right)
+    {
+    case FORWARD: Serial.print("FORWARD"); break;
+    case BACKWARD: Serial.print("BACKWARD"); break;
+    case LEFT: Serial.print("LEFT"); break;
+    case RIGHT: Serial.print("RIGHT"); break;
+    case FORWARD_LEFT: Serial.print("FORWARD_LEFT"); break;
+    case FORWARD_RIGHT: Serial.print("FORWARD_RIGHT"); break;
+    case BACKWARD_LEFT: Serial.print("BACKWARD_LEFT"); break;
+    case BACKWARD_RIGHT: Serial.print("BACKWARD_RIGHT"); break;
+    default: Serial.print("CENTER"); break;
+    }
+
+    Serial.println();
 }

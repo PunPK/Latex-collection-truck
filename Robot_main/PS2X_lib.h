@@ -199,6 +199,9 @@ boolean en_Pressures;
 
 };
 
+// Global instance declaration (defined in PS2X_lib.cpp)
+extern PS2X ps2x;
+
 #endif
 
 

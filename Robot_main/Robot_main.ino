@@ -110,62 +110,6 @@ void apply_arm_from_status(PS2_Status current)
     }
 }
 
-void print_debug()
-{
-    // Print raw analog values and D-pad/button states from PS2X
-    Serial.print("ANALOG RX:");
-    Serial.print(ps2x.Analog(PSS_RX));
-    Serial.print("  LX:");
-    Serial.print(ps2x.Analog(PSS_LX));
-    Serial.print("  RY:");
-    Serial.print(ps2x.Analog(PSS_RY));
-    Serial.print("  LY:");
-    Serial.print(ps2x.Analog(PSS_LY));
-
-    Serial.print("  | D-PAD U:" ); Serial.print(ps2x.Button(PSB_PAD_UP) ? 1 : 0);
-    Serial.print(" D:" ); Serial.print(ps2x.Button(PSB_PAD_DOWN) ? 1 : 0);
-    Serial.print(" L:" ); Serial.print(ps2x.Button(PSB_PAD_LEFT) ? 1 : 0);
-    Serial.print(" R:" ); Serial.print(ps2x.Button(PSB_PAD_RIGHT) ? 1 : 0);
-
-    // Right-side face buttons: Triangle, Square, Circle, Cross
-    Serial.print("  | TRI:" ); Serial.print(ps2x.Button(PSB_TRIANGLE) ? 1 : 0);
-    Serial.print(" SQ:" ); Serial.print(ps2x.Button(PSB_SQUARE) ? 1 : 0);
-    Serial.print(" CIR:" ); Serial.print(ps2x.Button(PSB_CIRCLE) ? 1 : 0);
-    Serial.print(" X:" ); Serial.print(ps2x.Button(PSB_CROSS) ? 1 : 0);
-
-   Serial.print("  | STATUS: ");
-    Serial.print(" LEFT :");
-    switch (status_left)
-    {
-    case FORWARD: Serial.print("FORWARD"); break;
-    case BACKWARD: Serial.print("BACKWARD"); break;
-    case LEFT: Serial.print("LEFT"); break;
-    case RIGHT: Serial.print("RIGHT"); break;
-    case FORWARD_LEFT: Serial.print("FORWARD_LEFT"); break;
-    case FORWARD_RIGHT: Serial.print("FORWARD_RIGHT"); break;
-    case BACKWARD_LEFT: Serial.print("BACKWARD_LEFT"); break;
-    case BACKWARD_RIGHT: Serial.print("BACKWARD_RIGHT"); break;
-    default: Serial.print("STOP"); break;
-    }
-
-    Serial.print("  | STATUS: ");
-    Serial.print("  |  RIGHT :");
-    switch (status_right)
-    {
-    case FORWARD: Serial.print("FORWARD"); break;
-    case BACKWARD: Serial.print("BACKWARD"); break;
-    case LEFT: Serial.print("LEFT"); break;
-    case RIGHT: Serial.print("RIGHT"); break;
-    case FORWARD_LEFT: Serial.print("FORWARD_LEFT"); break;
-    case FORWARD_RIGHT: Serial.print("FORWARD_RIGHT"); break;
-    case BACKWARD_LEFT: Serial.print("BACKWARD_LEFT"); break;
-    case BACKWARD_RIGHT: Serial.print("BACKWARD_RIGHT"); break;
-    default: Serial.print("CENTER"); break;
-    }
-
-    Serial.println();
-}
-
 void setup()
 {
     Serial.begin(115200);
@@ -178,7 +122,7 @@ void setup()
 
 void loop()
 {
-    ultrasonic_update();
+    // ultrasonic_update();
 
     unsigned long now = millis();
 
@@ -278,7 +222,7 @@ void loop()
     if (now - last_debug_print_ms >= DEBUG_PRINT_INTERVAL_MS)
     {
         last_debug_print_ms = now;
-        print_debug();
+        print_debug(status_left, status_right, gripper_status);
     }
     
 }
