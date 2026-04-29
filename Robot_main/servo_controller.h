@@ -10,5 +10,6 @@ extern const int BASE_STOP;
 
 void servo_init();
 void turnBase(uint8_t channel, uint16_t speedPulse, int durationMs);
-
+void gripper_clamp();
+void gripper_release();
 #endif

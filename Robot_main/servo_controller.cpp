@@ -11,15 +11,15 @@ void servo_init()
 
   Serial.println("เริ่มต้น: กำลังตั้งค่าแขนกล");
   pwm.setPWM(0, 0, BASE_STOP);
-  pwm.setPWM(1, 0, 200);
+  pwm.setPWM(1, 0, 470);
   pwm.setPWM(2, 0, 200);
   pwm.setPWM(3, 0, 400);
   pwm.setPWM(4, 0, BASE_STOP);
-  pwm.setPWM(5, 0, 300);
+  pwm.setPWM(5, 0, 450);
 
   Serial.println("เริ่มต้น: กำลังจัดตำแหน่งแขนกล");
-  turnBase(5, 300, 1000);
-  delay(500);
+  // turnBase(5, 300, 1000);
+  // delay(500);
 
   Serial.println("เริ่มต้น: จบการตั้งค่าแขนกล");
   delay(1000);
@@ -33,3 +33,13 @@ void turnBase(uint8_t channel, uint16_t speedPulse, int durationMs)
   delay(durationMs);
   pwm.setPWM(channel, 0, BASE_STOP);
 }
+
+void gripper_clamp()
+{
+  pwm.setPWM(5, 0, 200);
+}
+void gripper_release()
+{
+  pwm.setPWM(5, 0, 450);
+}
+

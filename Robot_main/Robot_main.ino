@@ -7,6 +7,7 @@
 uint8_t ps2_data[6];
 PS2_Status status_left = STOP;
 PS2_Status status_right = STOP;
+PS2_Status gripper_status = Release;
 
 // PS2X library instance
 PS2X ps2x;
@@ -65,6 +66,46 @@ void apply_motor_from_status(PS2_Status current)
         break;
     default:
         motor_stop();
+        break;
+    }
+}
+
+void apply_arm_from_status(PS2_Status current)
+{
+    switch (current)
+    {
+    case FORWARD:
+        arm_forward();
+        break;
+    case BACKWARD:
+        arm_backward();
+        break;
+    case LEFT:
+        arm_turn_left();
+        break;
+    case RIGHT:
+        arm_turn_right();
+        break;
+    case FORWARD_LEFT:
+        arm_turn_left();
+        break;
+    case FORWARD_RIGHT:
+        arm_turn_right();
+        break;
+    case BACKWARD_LEFT:
+        arm_turn_left();
+        break;
+    case BACKWARD_RIGHT:
+        arm_turn_right();
+        break;
+    case Release:
+        gripper_release();
+        break;
+    case Clamp:
+        gripper_clamp();
+        break;
+    default:
+        arm_stop();
         break;
     }
 }
@@ -137,7 +178,7 @@ void setup()
 
 void loop()
 {
-    ultrasonic_update();
+    // ultrasonic_update();
 
     unsigned long now = millis();
 
@@ -182,11 +223,11 @@ void loop()
 
         uint8_t analog_x_right = ps2x.Analog(PSS_RX);
         uint8_t analog_y_right = ps2x.Analog(PSS_RY);
-        if (((uint8_t)abs((int)analog_x_right - 128) <= PS2_DEADZONE) && !ps2x.Button(PSB_SQUARE) && !ps2x.Button(PSB_CIRCLE))
+        if (((uint8_t)abs((int)analog_x_right - 128) <= PS2_DEADZONE))
         {
             x_right = 0;
         }
-        else if ((analog_x_right < 128) || ps2x.Button(PSB_SQUARE))        
+        else if ((analog_x_right < 128))        
         {
             x_right = -1;
         }
@@ -195,11 +236,11 @@ void loop()
             x_right = 1;
         }
 
-        if (((uint8_t)abs((int)analog_y_right - 128) <= PS2_DEADZONE) && !ps2x.Button(PSB_TRIANGLE) && !ps2x.Button(PSB_CROSS))
+        if (((uint8_t)abs((int)analog_y_right - 128) <= PS2_DEADZONE) )
         {
             y_right = 0;
         }
-        else if ((analog_y_right > 128) || ps2x.Button(PSB_CROSS))
+        else if ((analog_y_right > 128))
         {
             y_right = 1;
         }
@@ -220,6 +261,17 @@ void loop()
         apply_motor_from_status(status_left);
 
         status_right = get_status_from_sticks(x_right, y_right, STOP);
+        apply_arm_from_status(status_right);
+
+        if (ps2x.Button(PSB_SQUARE))
+        {
+            gripper_status = Clamp;
+        }
+        else if (ps2x.Button(PSB_CIRCLE))
+        {
+            gripper_status = Release;
+        }
+        apply_arm_from_status(gripper_status);
         
     }
 

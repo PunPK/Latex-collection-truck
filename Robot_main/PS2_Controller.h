@@ -16,7 +16,9 @@ typedef enum
     FORWARD_LEFT,
     FORWARD_RIGHT,
     BACKWARD_LEFT,
-    BACKWARD_RIGHT
+    BACKWARD_RIGHT,
+    Clamp,
+    Release
 
 } PS2_Status;
 
