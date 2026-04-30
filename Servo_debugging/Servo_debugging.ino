@@ -37,6 +37,14 @@ void turnBase(uint8_t channel, uint16_t speedPulse, int durationMs)
 
 void loop()
 {
+
+  pwm.setPWM(2, 0, 300);
+  pwm.setPWM(5, 0, 400);
+  delay(1000);
+
+  pwm.setPWM(2, 0, 200);
+  pwm.setPWM(5, 0, 300);
+  delay(1000);
   // Serial.println("ฐาน: หมุนไปทิศทางที่ 1 (ความเร็วปานกลาง) เป็นเวลา 1 วินาที");
   // // ค่า > 280 ยิ่งมากยิ่งหมุนเร็ว (เช่น 350)
   // turnBase(0, 300, 1000);

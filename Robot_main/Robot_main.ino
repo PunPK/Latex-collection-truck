@@ -1,15 +1,40 @@
 #include "motor.h"
+#include "PS2X_lib.h"
 #include "PS2_Controller.h"
 #include "ultrasonic_sensor.h"
+#include "servo_controller.h"
 
 uint8_t ps2_data[6];
-PS2_Status status = STOP;
+PS2_Status status_left = STOP;
+PS2_Status status_right = STOP;
+PS2_Status gripper_status = Release;
+
+// PS2X library instance
+PS2X ps2x;
+
+// deadzone for analog stick
+const uint8_t PS2_DEADZONE = 12;
 
 const unsigned long PS2_POLL_INTERVAL_MS = 15;
-const unsigned long DEBUG_PRINT_INTERVAL_MS = 120;
+const unsigned long DEBUG_PRINT_INTERVAL_MS = 250;
 
 unsigned long last_ps2_poll_ms = 0;
 unsigned long last_debug_print_ms = 0;
+
+PS2_Status get_status_from_sticks(int x, int y, PS2_Status center_value)
+{
+    // map to PS2_Status
+    if (x == 0 && y == 1) return BACKWARD;
+    else if (x == 0 && y == -1) return FORWARD;
+    else if (x == -1 && y == 0) return LEFT;
+    else if (x == 1 && y == 0) return RIGHT;
+    else if (x == -1 && y == 1) return BACKWARD_LEFT;
+    else if (x == 1 && y == 1) return BACKWARD_RIGHT;
+    else if (x == -1 && y == -1) return FORWARD_LEFT;
+    else if (x == 1 && y == -1) return FORWARD_RIGHT;
+    else return center_value;
+}
+
 
 void apply_motor_from_status(PS2_Status current)
 {
@@ -45,77 +70,159 @@ void apply_motor_from_status(PS2_Status current)
     }
 }
 
-void print_debug()
+void apply_arm_from_status(PS2_Status current)
 {
-    Serial.print("PS2: ");
-    for (uint8_t i = 0; i < 6; i++)
-    {
-        Serial.print(ps2_data[i], HEX);
-        Serial.print(' ');
-    }
-    Serial.print("| STATUS: ");
-
-    switch (status)
+    switch (current)
     {
     case FORWARD:
-        Serial.print("FORWARD");
+        arm_forward();
         break;
     case BACKWARD:
-        Serial.print("BACKWARD");
+        arm_backward();
         break;
     case LEFT:
-        Serial.print("LEFT");
+        arm_turn_left();
         break;
     case RIGHT:
-        Serial.print("RIGHT");
+        arm_turn_right();
         break;
     case FORWARD_LEFT:
-        Serial.print("FORWARD_LEFT");
+        arm_turn_left();
         break;
     case FORWARD_RIGHT:
-        Serial.print("FORWARD_RIGHT");
+        arm_turn_right();
         break;
     case BACKWARD_LEFT:
-        Serial.print("BACKWARD_LEFT");
+        arm_turn_left();
         break;
     case BACKWARD_RIGHT:
-        Serial.print("BACKWARD_RIGHT");
+        arm_turn_right();
+        break;
+    case Release:
+        gripper_release();
+        break;
+    case Clamp:
+        gripper_clamp();
         break;
     default:
-        Serial.print("STOP");
+        arm_stop();
         break;
     }
-
-    Serial.println();
 }
 
 void setup()
 {
-    Serial.begin(9600);
+    Serial.begin(115200);
 
     motor_init();
-    PS2_Init();
+    ps2x.config_gamepad(PS2_CLK_PIN, PS2_CMD_PIN, PS2_ATT_PIN, PS2_DAT_PIN, true, true);
     ultrasonic_init();
-    PS2_EnableAnalog();
+    servo_init();
 }
 
 void loop()
 {
-    ultrasonic_update();
+    // ultrasonic_update();
 
     unsigned long now = millis();
 
     if (now - last_ps2_poll_ms >= PS2_POLL_INTERVAL_MS)
     {
         last_ps2_poll_ms = now;
-        PS2_ReadData(ps2_data);
-        status = PS2_GetStatus(ps2_data);
-        apply_motor_from_status(status);
+        ps2x.read_gamepad();
+
+        int x = 0;
+        int y = 0;
+
+        uint8_t analog_x = ps2x.Analog(PSS_LX);
+        uint8_t analog_y = ps2x.Analog(PSS_LY);
+        if (((uint8_t)abs((int)analog_x - 128) <= PS2_DEADZONE) && !ps2x.Button(PSB_PAD_LEFT) && !ps2x.Button(PSB_PAD_RIGHT))
+        {
+            x = 0;
+        }
+        else if ((analog_x < 128) || ps2x.Button(PSB_PAD_LEFT))        
+        {
+            x = -1;
+        }
+        else
+        {
+            x = 1;
+        }
+
+        if (((uint8_t)abs((int)analog_y - 128) <= PS2_DEADZONE) && !ps2x.Button(PSB_PAD_UP) && !ps2x.Button(PSB_PAD_DOWN))
+        {
+            y = 0;
+        }
+        else if ((analog_y > 128) || ps2x.Button(PSB_PAD_DOWN))
+        {
+            y = 1;
+        }
+        else
+        {
+            y = -1;
+        }
+
+        int x_right = 0;
+        int y_right = 0;
+
+        uint8_t analog_x_right = ps2x.Analog(PSS_RX);
+        uint8_t analog_y_right = ps2x.Analog(PSS_RY);
+        if (((uint8_t)abs((int)analog_x_right - 128) <= PS2_DEADZONE))
+        {
+            x_right = 0;
+        }
+        else if ((analog_x_right < 128))        
+        {
+            x_right = -1;
+        }
+        else
+        {
+            x_right = 1;
+        }
+
+        if (((uint8_t)abs((int)analog_y_right - 128) <= PS2_DEADZONE) )
+        {
+            y_right = 0;
+        }
+        else if ((analog_y_right > 128))
+        {
+            y_right = 1;
+        }
+        else
+        {
+            y_right = -1;
+        }
+        
+        if (ps2x.Analog(PSS_RX) == 255 && ps2x.Analog(PSS_RY) == 255 && ps2x.Analog(PSS_LX) == 255 && ps2x.Analog(PSS_LY) == 255)
+        {
+            x = 0;
+            y = 0;
+            x_right = 0;
+            y_right = 0;
+        }
+
+        status_left = get_status_from_sticks(x, y, STOP);
+        apply_motor_from_status(status_left);
+
+        status_right = get_status_from_sticks(x_right, y_right, STOP);
+        apply_arm_from_status(status_right);
+
+        if (ps2x.Button(PSB_SQUARE))
+        {
+            gripper_status = Clamp;
+        }
+        else if (ps2x.Button(PSB_CIRCLE))
+        {
+            gripper_status = Release;
+        }
+        apply_arm_from_status(gripper_status);
+        
     }
 
     if (now - last_debug_print_ms >= DEBUG_PRINT_INTERVAL_MS)
     {
         last_debug_print_ms = now;
-        print_debug();
+        print_debug(status_left, status_right, gripper_status);
     }
+    
 }

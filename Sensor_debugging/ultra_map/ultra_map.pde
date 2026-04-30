@@ -23,7 +23,8 @@ void setup() {
   dimGreen   = color(0, 80, 0);       // เขียวจาง (วงรอบนอก)
   
   println(Serial.list());
-  myPort = new Serial(this, "COM9", 9600);
+  // myPort = new Serial(this, "COM9", 9600);          // for window
+  myPort = new Serial(this, "/dev/ttyACM0", 115200);  // for ubuntu
   myPort.bufferUntil('.');
 }
 
